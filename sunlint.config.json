@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "C019": true,
+    "C029": "error",
+    "S009": "warn"
+  },
+  "languages": ["typescript"],
+  "include": ["src/**/*.ts"]
+}
