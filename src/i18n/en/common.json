@@ -1,0 +1,5 @@
+{
+  "hello": "Hello, {name}!",
+  "hello_world": "Hello World!",
+  "welcome": "Welcome to Medium Clone API"
+}
