@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { I18nModule, HeaderResolver, QueryResolver} from 'nestjs-i18n';
 import * as path from 'path';
 import { AppController } from './app.controller';
@@ -6,6 +7,10 @@ import { AppService } from './app.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {

@@ -1,4 +1,5 @@
 {
   "hello": "Xin chào, {name}!",
+  "hello_world": "Xin chào thế giới!",
   "welcome": "Chào mừng đến với Medium Clone API"
 }
