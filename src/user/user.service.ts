@@ -1,32 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  Repository,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { User } from './entities/user.entity';
+
+interface CreateUserData {
+  username: string;
+  email: string;
+  password: string;
+}
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository:
-      Repository<User>,
+    private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(
-    userData: DeepPartial<User>,
-  ): Promise<User> {
-    const user =
-      this.userRepository.create(userData);
+  async create(userData: CreateUserData): Promise<User> {
+    const user = this.userRepository.create(userData);
 
     return this.userRepository.save(user);
   }
 
-  async findById(
-    userId: number,
-  ): Promise<User | null> {
+  async findById(userId: number): Promise<User | null> {
     return this.userRepository.findOne({
       where: {
         id: userId,
@@ -34,9 +31,7 @@ export class UserService {
     });
   }
 
-  async findByEmail(
-    email: string,
-  ): Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: {
         email,
@@ -44,9 +39,7 @@ export class UserService {
     });
   }
 
-  async findByUsername(
-    username: string,
-  ): Promise<User | null> {
+  async findByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: {
         username,

@@ -12,7 +12,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
 import type { Request, Response } from 'express';
+import { I18nService } from 'nestjs-i18n';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/strategies/jwt.strategy';
@@ -24,15 +26,11 @@ import {
   PRAGMA_HEADER,
   PRAGMA_VALUE,
 } from '../common/constants/http-headers.constant';
-import { User } from './entities/user.entity';
+import { CurrentUserResponseDto } from './dto/responses/current-user-response.dto';
 import { UserService } from './user.service';
 
 interface AuthenticatedRequest extends Request {
   user: AuthenticatedUser;
-}
-
-interface CurrentUserResponse {
-  user: Omit<User, 'password'>;
 }
 
 @ApiTags('User')
@@ -40,6 +38,7 @@ interface CurrentUserResponse {
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    private readonly i18nService: I18nService,
   ) {}
 
   @Get()
@@ -51,6 +50,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Current user returned successfully',
+    type: CurrentUserResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -64,46 +64,27 @@ export class UserController {
     @Req() request: AuthenticatedRequest,
     @Res({ passthrough: true })
     response: Response,
-  ): Promise<CurrentUserResponse> {
-    this.setAntiCacheHeaders(response);
+  ): Promise<CurrentUserResponseDto> {
+    response.setHeader(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE);
+    response.setHeader(PRAGMA_HEADER, PRAGMA_VALUE);
+    response.setHeader(EXPIRES_HEADER, EXPIRES_VALUE);
 
-    const user =
-      await this.userService.findById(
-        request.user.userId,
-      );
+    const user = await this.userService.findById(request.user.userId);
 
     if (!user) {
       throw new NotFoundException(
-        'User not found',
+        this.i18nService.t('auth.errors.userNotFound'),
       );
     }
 
-    const {
-      password: _password,
-      ...userWithoutPassword
-    } = user;
-
-    return {
-      user: userWithoutPassword,
-    };
-  }
-
-  private setAntiCacheHeaders(
-    response: Response,
-  ): void {
-    response.setHeader(
-      CACHE_CONTROL_HEADER,
-      CACHE_CONTROL_VALUE,
-    );
-
-    response.setHeader(
-      PRAGMA_HEADER,
-      PRAGMA_VALUE,
-    );
-
-    response.setHeader(
-      EXPIRES_HEADER,
-      EXPIRES_VALUE,
+    return plainToInstance(
+      CurrentUserResponseDto,
+      {
+        user,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
     );
   }
 }

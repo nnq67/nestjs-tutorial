@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { I18nModule, HeaderResolver, QueryResolver} from 'nestjs-i18n';
+import { I18nModule, HeaderResolver, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -47,9 +47,9 @@ const THROTTLE_LIMIT = 10; // tối đa 10 request/phút mỗi IP
     RedisModule,
     AuthModule,
     UserModule,
-    ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT }]), 
+    ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT }]),
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard },AppService],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }, AppService],
 })
 export class AppModule {}

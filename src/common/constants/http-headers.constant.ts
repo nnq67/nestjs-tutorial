@@ -1,7 +1,6 @@
 export const CACHE_CONTROL_HEADER = 'Cache-Control';
 
-export const CACHE_CONTROL_VALUE =
-  'no-store, no-cache, must-revalidate';
+export const CACHE_CONTROL_VALUE = 'no-store, no-cache, must-revalidate';
 
 export const PRAGMA_HEADER = 'Pragma';
 

@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
+import { I18nService } from 'nestjs-i18n';
 
 import {
   LOGIN_RATE_LIMIT,
@@ -32,13 +33,11 @@ import {
   PRAGMA_VALUE,
   SESSION_COOKIE_NAME,
 } from '../common/constants/http-headers.constant';
-import {
-  AuthService,
-  type AuthResponse,
-  type LogoutResponse,
-} from './auth.service';
+import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { AuthResponseDto } from './dto/responses/auth-response.dto';
+import { LogoutResponseDto } from './dto/responses/logout-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Authentication')
@@ -46,6 +45,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly i18nService: I18nService,
   ) {}
 
   @Post('register')
@@ -55,6 +55,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'User registered successfully',
+    type: AuthResponseDto,
   })
   @ApiResponse({
     status: 409,
@@ -64,8 +65,10 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true })
     response: Response,
-  ): Promise<AuthResponse> {
-    this.setAntiCacheHeaders(response);
+  ): Promise<AuthResponseDto> {
+    response.setHeader(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE);
+    response.setHeader(PRAGMA_HEADER, PRAGMA_VALUE);
+    response.setHeader(EXPIRES_HEADER, EXPIRES_VALUE);
 
     return this.authService.register(dto);
   }
@@ -83,6 +86,7 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'Login successfully',
+    type: AuthResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -92,8 +96,10 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true })
     response: Response,
-  ): Promise<AuthResponse> {
-    this.setAntiCacheHeaders(response);
+  ): Promise<AuthResponseDto> {
+    response.setHeader(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE);
+    response.setHeader(PRAGMA_HEADER, PRAGMA_VALUE);
+    response.setHeader(EXPIRES_HEADER, EXPIRES_VALUE);
 
     return this.authService.login(dto);
   }
@@ -107,68 +113,47 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'Logout successfully',
+    type: LogoutResponseDto,
   })
   @ApiResponse({
     status: 401,
     description: 'Invalid or missing access token',
   })
-  async logout(
+  async signOut(
     @Headers(AUTHORIZATION_HEADER)
     authorizationHeader: string | undefined,
     @Res({ passthrough: true })
     response: Response,
-  ): Promise<LogoutResponse> {
-    this.setAntiCacheHeaders(response);
+  ): Promise<LogoutResponseDto> {
+    response.setHeader(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE);
+    response.setHeader(PRAGMA_HEADER, PRAGMA_VALUE);
+    response.setHeader(EXPIRES_HEADER, EXPIRES_VALUE);
+
+    const token = this.extractBearerToken(authorizationHeader);
+
+    const result = await this.authService.invalidateSession(token);
 
     response.clearCookie(SESSION_COOKIE_NAME);
     response.clearCookie(ACCESS_TOKEN_COOKIE_NAME);
 
-    const token =
-      this.extractBearerToken(authorizationHeader);
-
-    return this.authService.logout(token);
+    return result;
   }
 
-  private extractBearerToken(
-    authorizationHeader: string | undefined,
-  ): string {
+  private extractBearerToken(authorizationHeader: string | undefined): string {
     if (!authorizationHeader) {
       throw new UnauthorizedException(
-        'Authorization header is required',
+        this.i18nService.t('auth.errors.authorizationHeaderRequired'),
       );
     }
 
-    const [authorizationScheme, token] =
-      authorizationHeader.split(' ');
+    const [authorizationScheme, token] = authorizationHeader.split(' ');
 
-    if (
-      authorizationScheme !== AUTHORIZATION_SCHEME ||
-      !token
-    ) {
+    if (authorizationScheme !== AUTHORIZATION_SCHEME || !token) {
       throw new UnauthorizedException(
-        'Authorization header must use Bearer token',
+        this.i18nService.t('auth.errors.authorizationHeaderMustUseBearerToken'),
       );
     }
 
     return token;
-  }
-
-  private setAntiCacheHeaders(
-    response: Response,
-  ): void {
-    response.setHeader(
-      CACHE_CONTROL_HEADER,
-      CACHE_CONTROL_VALUE,
-    );
-
-    response.setHeader(
-      PRAGMA_HEADER,
-      PRAGMA_VALUE,
-    );
-
-    response.setHeader(
-      EXPIRES_HEADER,
-      EXPIRES_VALUE,
-    );
   }
 }

@@ -1,18 +1,11 @@
-import {
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import type { Request } from 'express';
-import {
-  ExtractJwt,
-  Strategy,
-} from 'passport-jwt';
+import { I18nService } from 'nestjs-i18n';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import {
-  AUTHORIZATION_SCHEME,
-} from '../../common/constants/http-headers.constant';
+import { AUTHORIZATION_SCHEME } from '../../common/constants/http-headers.constant';
 import { RedisService } from '../../redis/redis.service';
 
 export interface JwtPayload {
@@ -28,20 +21,15 @@ export interface AuthenticatedUser {
 }
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(
-  Strategy,
-) {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly i18nService: I18nService,
   ) {
     super({
-      jwtFromRequest:
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey:
-        configService.getOrThrow<string>(
-          'JWT_SECRET',
-        ),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
       passReqToCallback: true,
       ignoreExpiration: false,
     });
@@ -53,18 +41,17 @@ export class JwtStrategy extends PassportStrategy(
   ): Promise<AuthenticatedUser> {
     const token = this.extractToken(request);
 
-    const isBlacklisted =
-      await this.redisService.isBlacklisted(token);
+    const isBlacklisted = await this.redisService.isBlacklisted(token);
 
     if (isBlacklisted) {
       throw new UnauthorizedException(
-        'Access token has been invalidated',
+        this.i18nService.t('auth.errors.accessTokenInvalidated'),
       );
     }
 
     if (!payload.sub || !payload.email) {
       throw new UnauthorizedException(
-        'Invalid access token payload',
+        this.i18nService.t('auth.errors.invalidAccessTokenPayload'),
       );
     }
 
@@ -75,24 +62,19 @@ export class JwtStrategy extends PassportStrategy(
   }
 
   private extractToken(request: Request): string {
-    const authorizationHeader =
-      request.headers.authorization;
+    const authorizationHeader = request.headers.authorization;
 
     if (!authorizationHeader) {
       throw new UnauthorizedException(
-        'Authorization header is required',
+        this.i18nService.t('auth.errors.authorizationHeaderRequired'),
       );
     }
 
-    const [authorizationScheme, token] =
-      authorizationHeader.split(' ');
+    const [authorizationScheme, token] = authorizationHeader.split(' ');
 
-    if (
-      authorizationScheme !== AUTHORIZATION_SCHEME ||
-      !token
-    ) {
+    if (authorizationScheme !== AUTHORIZATION_SCHEME || !token) {
       throw new UnauthorizedException(
-        'Invalid authorization header',
+        this.i18nService.t('auth.errors.invalidAuthorizationHeader'),
       );
     }
 
