@@ -1,0 +1,6 @@
+{
+  "IS_STRING": "{property} must be a string",
+  "IS_NOT_EMPTY": "{property} must not be empty",
+  "IS_EMAIL": "{property} must be a valid email address",
+  "MIN_LENGTH": "{property} must contain at least {constraints.0} characters"
+}

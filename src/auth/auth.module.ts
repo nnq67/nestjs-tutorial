@@ -9,6 +9,7 @@ import {
   GLOBAL_RATE_LIMIT,
   GLOBAL_RATE_LIMIT_TTL_MS,
 } from '../common/constants/auth.constant';
+import { AntiCacheInterceptor } from '../common/interceptors/anti-cache.interceptor';
 import { RedisModule } from '../redis/redis.module';
 import { UserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
@@ -46,6 +47,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [
     AuthService,
     JwtStrategy,
+    AntiCacheInterceptor,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

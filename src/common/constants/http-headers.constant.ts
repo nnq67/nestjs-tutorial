@@ -13,7 +13,3 @@ export const EXPIRES_VALUE = '0';
 export const AUTHORIZATION_HEADER = 'authorization';
 
 export const AUTHORIZATION_SCHEME = 'Bearer';
-
-export const SESSION_COOKIE_NAME = 'session';
-
-export const ACCESS_TOKEN_COOKIE_NAME = 'access_token';

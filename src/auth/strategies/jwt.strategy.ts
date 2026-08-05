@@ -18,6 +18,7 @@ export interface JwtPayload {
 export interface AuthenticatedUser {
   userId: number;
   email: string;
+  accessToken: string;
 }
 
 @Injectable()
@@ -39,9 +40,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     request: Request,
     payload: JwtPayload,
   ): Promise<AuthenticatedUser> {
-    const token = this.extractToken(request);
+    const accessToken = this.extractToken(request);
 
-    const isBlacklisted = await this.redisService.isBlacklisted(token);
+    const isBlacklisted = await this.redisService.isBlacklisted(accessToken);
 
     if (isBlacklisted) {
       throw new UnauthorizedException(
@@ -58,6 +59,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       email: payload.email,
+      accessToken,
     };
   }
 
@@ -70,14 +72,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    const [authorizationScheme, token] = authorizationHeader.split(' ');
+    const [authorizationScheme, accessToken] = authorizationHeader.split(' ');
 
-    if (authorizationScheme !== AUTHORIZATION_SCHEME || !token) {
+    if (authorizationScheme !== AUTHORIZATION_SCHEME || !accessToken) {
       throw new UnauthorizedException(
         this.i18nService.t('auth.errors.invalidAuthorizationHeader'),
       );
     }
 
-    return token;
+    return accessToken;
   }
 }

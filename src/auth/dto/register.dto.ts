@@ -1,22 +1,45 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class RegisterDto {
   @ApiProperty({
-    example: 'string',
+    example: 'john_doe',
   })
-  @IsString()
+  @IsString({
+    message: i18nValidationMessage('validation.IS_STRING'),
+  })
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
+  })
   username!: string;
 
   @ApiProperty({
-    example: 'string',
+    example: 'john@example.com',
   })
-  @IsEmail()
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
+  })
+  @IsEmail(
+    {},
+    {
+      message: i18nValidationMessage('validation.IS_EMAIL'),
+    },
+  )
   email!: string;
 
   @ApiProperty({
-    example: 'string',
+    example: 'password123',
+    minLength: 6,
   })
-  @MinLength(6)
+  @IsString({
+    message: i18nValidationMessage('validation.IS_STRING'),
+  })
+  @IsNotEmpty({
+    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
+  })
+  @MinLength(6, {
+    message: i18nValidationMessage('validation.MIN_LENGTH'),
+  })
   password!: string;
 }
