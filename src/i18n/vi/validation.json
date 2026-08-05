@@ -2,5 +2,7 @@
   "IS_STRING": "{property} phải là chuỗi",
   "IS_NOT_EMPTY": "{property} không được để trống",
   "IS_EMAIL": "{property} phải là địa chỉ email hợp lệ",
-  "MIN_LENGTH": "{property} phải có ít nhất {constraints.0} ký tự"
+  "MIN_LENGTH": "{property} phải có ít nhất {constraints.0} ký tự",
+  "MAX_LENGTH": "{property} chỉ được có tối đa {constraints.0} ký tự",
+  "NOT_BLANK": "{property} không được chỉ chứa khoảng trắng"
 }

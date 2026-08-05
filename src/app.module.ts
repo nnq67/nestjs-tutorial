@@ -1,18 +1,30 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  ConfigModule,
+  ConfigService,
+} from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+} from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { I18nModule, HeaderResolver, QueryResolver } from 'nestjs-i18n';
-import * as path from 'path';
+import {
+  HeaderResolver,
+  I18nModule,
+  QueryResolver,
+} from 'nestjs-i18n';
+import * as path from 'node:path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
+import { ProfileModule } from './profile/profile.module';
+import { RedisModule } from './redis/redis.module';
 import { UserModule } from './user/user.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 
-const THROTTLE_TTL_MS = 60000; // 1 phút
-const THROTTLE_LIMIT = 10; // tối đa 10 request/phút mỗi IP
+const GLOBAL_RATE_LIMIT_TTL_MS = 60_000;
+const GLOBAL_RATE_LIMIT = 10;
 
 @Module({
   imports: [
@@ -20,36 +32,138 @@ const THROTTLE_LIMIT = 10; // tối đa 10 request/phút mỗi IP
       isGlobal: true,
       envFilePath: '.env',
     }),
+
     TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: (
+        configService: ConfigService,
+      ) => ({
         type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get('DB_USERNAME'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+
+        host:
+          configService.getOrThrow<string>(
+            'DB_HOST',
+          ),
+
+        port:
+          configService.getOrThrow<number>(
+            'DB_PORT',
+          ),
+
+        username:
+          configService.getOrThrow<string>(
+            'DB_USERNAME',
+          ),
+
+        password:
+          configService.getOrThrow<string>(
+            'DB_PASSWORD',
+          ),
+
+        database:
+          configService.getOrThrow<string>(
+            'DB_NAME',
+          ),
+
+        entities: [
+          path.join(
+            __dirname,
+            '**',
+            '*.entity{.ts,.js}',
+          ),
+        ],
+
         synchronize: false,
       }),
     }),
-    I18nModule.forRoot({
-      fallbackLanguage: 'en',
-      loaderOptions: {
-        path: path.join(__dirname, '/i18n/'),
-        watch: true,
+
+    I18nModule.forRootAsync({
+      imports: [ConfigModule],
+
+      inject: [ConfigService],
+
+      useFactory: (
+        configService: ConfigService,
+      ) => {
+        const nodeEnvironment =
+          configService.get<string>(
+            'NODE_ENV',
+            'development',
+          );
+
+        const isProduction =
+          nodeEnvironment ===
+          'production';
+
+        const translationPath =
+          isProduction
+            ? path.join(
+                __dirname,
+                'i18n',
+              )
+            : path.join(
+                process.cwd(),
+                'src',
+                'i18n',
+              );
+
+        return {
+          fallbackLanguage: 'en',
+
+          loaderOptions: {
+            path: translationPath,
+            watch: !isProduction,
+          },
+        };
       },
+
+      /*
+       * Phải đặt ngoài useFactory.
+       *
+       * QueryResolver xử lý:
+       *   ?lang=vi
+       *
+       * HeaderResolver xử lý:
+       *   x-custom-lang: vi
+       */
       resolvers: [
-        { use: QueryResolver, options: ['lang'] },
-        new HeaderResolver(['x-custom-lang']),
+        {
+          use: QueryResolver,
+          options: ['lang'],
+        },
+
+        new HeaderResolver([
+          'x-custom-lang',
+        ]),
       ],
     }),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl:
+          GLOBAL_RATE_LIMIT_TTL_MS,
+        limit: GLOBAL_RATE_LIMIT,
+      },
+    ]),
+
     RedisModule,
     AuthModule,
     UserModule,
-    ThrottlerModule.forRoot([{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT }]),
+    ProfileModule,
   ],
-  controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }, AppService],
+
+  controllers: [
+    AppController,
+  ],
+
+  providers: [
+    AppService,
+
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
