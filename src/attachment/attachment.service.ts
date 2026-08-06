@@ -34,6 +34,7 @@ export class AttachmentService {
     return this.attachmentRepository.findOne({
       where: {
         attachableType: USER_ATTACHABLE_TYPE,
+
         attachableId: userId,
       },
     });
@@ -83,15 +84,20 @@ export class AttachmentService {
       existingAttachment ??
       this.attachmentRepository.create({
         id: randomUUID(),
+
         attachableType: USER_ATTACHABLE_TYPE,
+
         attachableId: userId,
       });
 
     const previousUrl = existingAttachment?.url;
 
     attachment.url = publicUrl;
+
     attachment.fileName = file.originalname;
+
     attachment.fileType = file.mimetype;
+
     attachment.fileSize = file.size;
 
     let savedAttachment: Attachment;

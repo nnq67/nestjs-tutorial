@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Put,
   Req,
   UploadedFile,
@@ -28,7 +29,6 @@ import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
 } from '../common/constants/auth.constant';
-import { AntiCacheInterceptor } from '../common/interceptors/anti-cache.interceptor';
 import { CurrentUserResponseDto } from './dto/responses/current-user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
@@ -41,11 +41,16 @@ interface AuthenticatedRequest extends Request {
 @ApiBearerAuth()
 @Controller('user')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(AntiCacheInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiOperation({
     summary: 'Get current user',
   })
@@ -70,6 +75,12 @@ export class UserController {
   }
 
   @Put()
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @UseInterceptors(
     FileInterceptor('avatar', {
       limits: {
@@ -85,6 +96,7 @@ export class UserController {
   @ApiBody({
     schema: {
       type: 'object',
+
       properties: {
         username: {
           type: 'string',
@@ -93,6 +105,7 @@ export class UserController {
           maxLength: 50,
           description: 'Optional new username',
         },
+
         email: {
           type: 'string',
           format: 'email',
@@ -100,6 +113,7 @@ export class UserController {
           maxLength: 320,
           description: 'Optional new email',
         },
+
         password: {
           type: 'string',
           example: 'securePassword123',
@@ -107,6 +121,7 @@ export class UserController {
           maxLength: PASSWORD_MAX_LENGTH,
           description: 'Optional new password',
         },
+
         bio: {
           type: 'string',
           example: 'Backend developer learning NestJS',
@@ -115,6 +130,7 @@ export class UserController {
           description:
             'Optional biography. Submit an empty value to remove the current bio.',
         },
+
         avatar: {
           type: 'string',
           format: 'binary',

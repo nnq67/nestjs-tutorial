@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "notFound": "Article not found.",
+    "forbidden": "You are not allowed to modify this article."
+  }
+}

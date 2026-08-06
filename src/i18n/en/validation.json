@@ -1,8 +1,13 @@
 {
-  "IS_STRING": "{property} must be a string",
-  "IS_NOT_EMPTY": "{property} must not be empty",
-  "IS_EMAIL": "{property} must be a valid email address",
-  "MIN_LENGTH": "{property} must contain at least {constraints.0} characters",
-  "MAX_LENGTH": "{property} must contain at most {constraints.0} characters",
-  "NOT_BLANK": "{property} must not contain only whitespace"
+  "IS_STRING": "$property must be a string.",
+  "IS_NOT_EMPTY": "$property must not be empty.",
+  "NOT_BLANK": "$property must not be blank.",
+  "IS_EMAIL": "$property must be a valid email address.",
+  "MIN_LENGTH": "$property must be at least $constraint1 characters.",
+  "MAX_LENGTH": "$property must not exceed $constraint1 characters.",
+  "IS_ARRAY": "$property must be an array.",
+  "ARRAY_MAX_SIZE": "$property must contain no more than $constraint1 items.",
+  "IS_INT": "$property must be an integer.",
+  "MIN": "$property must not be less than $constraint1.",
+  "MAX": "$property must not be greater than $constraint1."
 }
