@@ -16,6 +16,10 @@ import { BCRYPT_SALT_ROUNDS } from '../common/constants/auth.constant';
 import { CurrentUserResponseDto } from './dto/responses/current-user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import {
+  UserUpdateRepositories,
+  UserUpdateRepository,
+} from './repositories/user-update.repository';
 
 interface CreateUserData {
   username: string;
@@ -30,6 +34,8 @@ export class UserService {
     private readonly userRepository: Repository<User>,
 
     private readonly attachmentService: AttachmentService,
+
+    private readonly userUpdateRepository: UserUpdateRepository,
 
     private readonly i18nService: I18nService,
   ) {}
@@ -82,8 +88,42 @@ export class UserService {
       this.attachmentService.validateAvatar(avatar);
     }
 
-    const user = await this.getUserOrFail(userId);
+    const updatedUser = await this.userUpdateRepository.transaction(
+      async (repositories) =>
+        this.updateUserWithinTransaction(userId, dto, avatar, repositories),
+    );
 
+    return this.buildCurrentUserResponse(updatedUser);
+  }
+
+  private async updateUserWithinTransaction(
+    userId: number,
+    dto: UpdateUserDto,
+    avatar: UploadedAvatarFile | undefined,
+    repositories: UserUpdateRepositories,
+  ): Promise<User> {
+    const user = await this.getUserOrFail(userId, repositories.userRepository);
+
+    await this.applyUserUpdates(user, dto, repositories.userRepository);
+
+    const updatedUser = await repositories.userRepository.save(user);
+
+    if (avatar) {
+      await this.attachmentService.createOrReplaceAvatar(
+        userId,
+        avatar,
+        repositories.attachmentRepository,
+      );
+    }
+
+    return updatedUser;
+  }
+
+  private async applyUserUpdates(
+    user: User,
+    dto: UpdateUserDto,
+    userRepository: Repository<User>,
+  ): Promise<void> {
     if (dto.username !== undefined) {
       const username = dto.username.trim();
 
@@ -93,7 +133,7 @@ export class UserService {
         );
       }
 
-      await this.ensureUsernameAvailable(username, userId);
+      await this.ensureUsernameAvailable(username, user.id, userRepository);
 
       user.username = username;
     }
@@ -101,7 +141,7 @@ export class UserService {
     if (dto.email !== undefined) {
       const email = dto.email.trim().toLowerCase();
 
-      await this.ensureEmailAvailable(email, userId);
+      await this.ensureEmailAvailable(email, user.id, userRepository);
 
       user.email = email;
     }
@@ -127,6 +167,17 @@ export class UserService {
 
   private async getUserOrFail(userId: number): Promise<User> {
     const user = await this.findById(userId);
+  }
+
+  private async getUserOrFail(
+    userId: number,
+    userRepository: Repository<User> = this.userRepository,
+  ): Promise<User> {
+    const user = await userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
 
     if (!user) {
       throw new NotFoundException(

@@ -34,7 +34,6 @@ export class AttachmentService {
     return this.attachmentRepository.findOne({
       where: {
         attachableType: USER_ATTACHABLE_TYPE,
-
         attachableId: userId,
       },
     });
