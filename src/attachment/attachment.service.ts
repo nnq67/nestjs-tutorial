@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import { I18nService } from 'nestjs-i18n';
 import { Repository } from 'typeorm';
 
@@ -89,7 +89,7 @@ export class AttachmentService {
     );
 
     const publicUrl =
-      `${AVATAR_PUBLIC_URL_PREFIX}` + `/${storedFileName}`;
+      `${AVATAR_PUBLIC_URL_PREFIX}/${storedFileName}`;
 
     await this.writeAvatarFile(
       uploadDirectory,
@@ -99,7 +99,9 @@ export class AttachmentService {
 
     try {
       if (existingAttachment) {
-        await attachmentRepository.softRemove(existingAttachment);
+        await attachmentRepository.softRemove(
+          existingAttachment,
+        );
       }
 
       const attachment = attachmentRepository.create({
@@ -112,20 +114,20 @@ export class AttachmentService {
         fileSize: file.size,
       });
 
-      return await attachmentRepository.save(attachment);
+      return await attachmentRepository.save(
+        attachment,
+      );
     } catch {
-      await this.removeFileBestEffort(absoluteFilePath);
+      await this.removeFileBestEffort(
+        absoluteFilePath,
+      );
 
       throw new InternalServerErrorException(
-        this.i18nService.t('user.errors.avatarStorageFailed'),
+        this.i18nService.t(
+          'user.errors.avatarStorageFailed',
+        ),
       );
     }
-
-    if (previousUrl && previousUrl !== publicUrl) {
-      await this.deleteStoredFile(previousUrl);
-    }
-
-    return savedAttachment;
   }
 
   private async writeAvatarFile(
@@ -138,43 +140,45 @@ export class AttachmentService {
         recursive: true,
       });
 
-      await writeFile(absoluteFilePath, buffer);
+      await writeFile(
+        absoluteFilePath,
+        buffer,
+      );
     } catch {
       throw new InternalServerErrorException(
-        this.i18nService.t('user.errors.avatarStorageFailed'),
+        this.i18nService.t(
+          'user.errors.avatarStorageFailed',
+        ),
       );
     }
   }
 
-  private getAvatarExtension(mimeType: string): string {
-    const extension = AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
+  private getAvatarExtension(
+    mimeType: string,
+  ): string {
+    const extension =
+      AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
 
     if (!extension) {
       throw new BadRequestException(
-        this.i18nService.t('user.errors.avatarInvalidType', {
-          args: {
-            supportedTypes: 'JPEG, PNG, WEBP',
+        this.i18nService.t(
+          'user.errors.avatarInvalidType',
+          {
+            args: {
+              supportedTypes:
+                'JPEG, PNG, WEBP',
+            },
           },
-        }),
+        ),
       );
     }
 
     return extension;
   }
 
-  private async deleteStoredFile(publicUrl: string): Promise<void> {
-    const storedFileName = basename(publicUrl);
-
-    const absoluteFilePath = join(
-      process.cwd(),
-      AVATAR_UPLOAD_DIRECTORY,
-      storedFileName,
-    );
-
-    await this.removeFileBestEffort(absoluteFilePath);
-  }
-
-  private async removeFileBestEffort(absoluteFilePath: string): Promise<void> {
+  private async removeFileBestEffort(
+    absoluteFilePath: string,
+  ): Promise<void> {
     await Promise.allSettled([
       rm(absoluteFilePath, {
         force: true,
