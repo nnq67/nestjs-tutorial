@@ -25,7 +25,9 @@
     "migration:generate": "npm run typeorm -- migration:generate",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "migration:test:run": "typeorm-ts-node-commonjs -d src/config/typeorm-test.config.ts migration:run",
+    "migration:test:revert": "typeorm-ts-node-commonjs -d src/config/typeorm-test.config.ts migration:revert"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.1.3",

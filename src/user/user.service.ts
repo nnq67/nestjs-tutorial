@@ -240,9 +240,7 @@ export class UserService {
   private async buildCurrentUserResponse(
     user: User,
   ): Promise<CurrentUserResponseDto> {
-    const avatar = await this.attachmentService.findAvatarByUserId(
-      user.id,
-    );
+    const avatar = await this.attachmentService.findAvatarByUserId(user.id);
 
     return plainToInstance(
       CurrentUserResponseDto,

@@ -140,36 +140,24 @@ export class AttachmentService {
         recursive: true,
       });
 
-      await writeFile(
-        absoluteFilePath,
-        buffer,
-      );
+      await writeFile(absoluteFilePath, buffer);
     } catch {
       throw new InternalServerErrorException(
-        this.i18nService.t(
-          'user.errors.avatarStorageFailed',
-        ),
+        this.i18nService.t('user.errors.avatarStorageFailed'),
       );
     }
   }
 
-  private getAvatarExtension(
-    mimeType: string,
-  ): string {
-    const extension =
-      AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
+  private getAvatarExtension(mimeType: string): string {
+    const extension = AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
 
     if (!extension) {
       throw new BadRequestException(
-        this.i18nService.t(
-          'user.errors.avatarInvalidType',
-          {
-            args: {
-              supportedTypes:
-                'JPEG, PNG, WEBP',
-            },
+        this.i18nService.t('user.errors.avatarInvalidType', {
+          args: {
+            supportedTypes: 'JPEG, PNG, WEBP',
           },
-        ),
+        }),
       );
     }
 
