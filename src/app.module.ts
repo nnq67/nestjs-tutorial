@@ -1,19 +1,9 @@
 import { Module } from '@nestjs/common';
-import {
-  ConfigModule,
-  ConfigService,
-} from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import {
-  ThrottlerGuard,
-  ThrottlerModule,
-} from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  HeaderResolver,
-  I18nModule,
-  QueryResolver,
-} from 'nestjs-i18n';
+import { HeaderResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'node:path';
 
 import { AppController } from './app.controller';
@@ -36,43 +26,20 @@ const GLOBAL_RATE_LIMIT = 10;
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (
-        configService: ConfigService,
-      ) => ({
+      useFactory: (configService: ConfigService) => ({
         type: 'postgres',
 
-        host:
-          configService.getOrThrow<string>(
-            'DB_HOST',
-          ),
+        host: configService.getOrThrow<string>('DB_HOST'),
 
-        port:
-          configService.getOrThrow<number>(
-            'DB_PORT',
-          ),
+        port: configService.getOrThrow<number>('DB_PORT'),
 
-        username:
-          configService.getOrThrow<string>(
-            'DB_USERNAME',
-          ),
+        username: configService.getOrThrow<string>('DB_USERNAME'),
 
-        password:
-          configService.getOrThrow<string>(
-            'DB_PASSWORD',
-          ),
+        password: configService.getOrThrow<string>('DB_PASSWORD'),
 
-        database:
-          configService.getOrThrow<string>(
-            'DB_NAME',
-          ),
+        database: configService.getOrThrow<string>('DB_NAME'),
 
-        entities: [
-          path.join(
-            __dirname,
-            '**',
-            '*.entity{.ts,.js}',
-          ),
-        ],
+        entities: [path.join(__dirname, '**', '*.entity{.ts,.js}')],
 
         synchronize: false,
       }),
@@ -83,30 +50,17 @@ const GLOBAL_RATE_LIMIT = 10;
 
       inject: [ConfigService],
 
-      useFactory: (
-        configService: ConfigService,
-      ) => {
-        const nodeEnvironment =
-          configService.get<string>(
-            'NODE_ENV',
-            'development',
-          );
+      useFactory: (configService: ConfigService) => {
+        const nodeEnvironment = configService.get<string>(
+          'NODE_ENV',
+          'development',
+        );
 
-        const isProduction =
-          nodeEnvironment ===
-          'production';
+        const isProduction = nodeEnvironment === 'production';
 
-        const translationPath =
-          isProduction
-            ? path.join(
-                __dirname,
-                'i18n',
-              )
-            : path.join(
-                process.cwd(),
-                'src',
-                'i18n',
-              );
+        const translationPath = isProduction
+          ? path.join(__dirname, 'i18n')
+          : path.join(process.cwd(), 'src', 'i18n');
 
         return {
           fallbackLanguage: 'en',
@@ -133,16 +87,13 @@ const GLOBAL_RATE_LIMIT = 10;
           options: ['lang'],
         },
 
-        new HeaderResolver([
-          'x-custom-lang',
-        ]),
+        new HeaderResolver(['x-custom-lang']),
       ],
     }),
 
     ThrottlerModule.forRoot([
       {
-        ttl:
-          GLOBAL_RATE_LIMIT_TTL_MS,
+        ttl: GLOBAL_RATE_LIMIT_TTL_MS,
         limit: GLOBAL_RATE_LIMIT,
       },
     ]),
@@ -153,9 +104,7 @@ const GLOBAL_RATE_LIMIT = 10;
     ProfileModule,
   ],
 
-  controllers: [
-    AppController,
-  ],
+  controllers: [AppController],
 
   providers: [
     AppService,
