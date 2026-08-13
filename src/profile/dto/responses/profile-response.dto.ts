@@ -1,24 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
-export class UserResponseDto {
-  @ApiProperty({
-    example: 1,
-  })
-  @Expose()
-  id!: number;
-
+export class ProfileDto {
   @ApiProperty({
     example: 'john_doe',
   })
   @Expose()
   username!: string;
-
-  @ApiProperty({
-    example: 'john@example.com',
-  })
-  @Expose()
-  email!: string;
 
   @ApiProperty({
     example: 'Backend developer learning NestJS',
@@ -35,14 +23,17 @@ export class UserResponseDto {
   image!: string | null;
 
   @ApiProperty({
-    example: '2026-08-05T01:30:00.000Z',
+    example: true,
   })
   @Expose()
-  createdAt!: Date;
+  following!: boolean;
+}
 
+export class ProfileResponseDto {
   @ApiProperty({
-    example: '2026-08-05T01:30:00.000Z',
+    type: ProfileDto,
   })
   @Expose()
-  updatedAt!: Date;
+  @Type(() => ProfileDto)
+  profile!: ProfileDto;
 }

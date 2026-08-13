@@ -28,6 +28,13 @@ export class User {
   })
   password!: string;
 
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  bio!: string | null;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp',

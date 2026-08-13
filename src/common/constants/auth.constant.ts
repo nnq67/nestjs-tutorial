@@ -1,5 +1,9 @@
 export const BCRYPT_SALT_ROUNDS = 10;
 
+export const PASSWORD_MIN_LENGTH = 12;
+
+export const PASSWORD_MAX_LENGTH = 72;
+
 export const DEFAULT_JWT_EXPIRES_IN_SECONDS = 3600;
 
 export const LOGIN_RATE_LIMIT = 5;

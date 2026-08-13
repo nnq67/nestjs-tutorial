@@ -1,0 +1,14 @@
+{
+  "errors": {
+    "userNotFound": "Không tìm thấy người dùng",
+    "profileNotFound": "Không tìm thấy hồ sơ người dùng",
+    "usernameRequired": "Tên người dùng không được để trống",
+    "usernameAlreadyInUse": "Tên người dùng đã được sử dụng",
+    "emailAlreadyInUse": "Email đã được sử dụng",
+    "cannotFollowYourself": "Bạn không thể theo dõi hoặc bỏ theo dõi chính mình",
+    "avatarInvalid": "Tệp ảnh đại diện không hợp lệ",
+    "avatarInvalidType": "Ảnh đại diện phải thuộc một trong các định dạng: {supportedTypes}",
+    "avatarTooLarge": "Kích thước ảnh đại diện không được vượt quá {maxSize} MB",
+    "avatarStorageFailed": "Không thể lưu ảnh đại diện"
+  }
+}

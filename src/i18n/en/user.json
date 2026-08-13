@@ -1,0 +1,14 @@
+{
+  "errors": {
+    "userNotFound": "User not found",
+    "profileNotFound": "Profile not found",
+    "usernameRequired": "Username must not be blank",
+    "usernameAlreadyInUse": "Username is already in use",
+    "emailAlreadyInUse": "Email is already in use",
+    "cannotFollowYourself": "You cannot follow or unfollow yourself",
+    "avatarInvalid": "The uploaded avatar is invalid",
+    "avatarInvalidType": "Avatar must be one of these file types: {supportedTypes}",
+    "avatarTooLarge": "Avatar size must not exceed {maxSize} MB",
+    "avatarStorageFailed": "Unable to store avatar"
+  }
+}

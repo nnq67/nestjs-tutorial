@@ -1,7 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, type TransformFnParams } from 'class-transformer';
 import {
+  Allow,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -14,12 +17,28 @@ import {
   PASSWORD_MIN_LENGTH,
 } from '../../common/constants/auth.constant';
 
-export class RegisterDto {
-  @ApiProperty({
+function emptyStringToUndefined({ value }: TransformFnParams): unknown {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (trimmedValue === '') {
+    return undefined;
+  }
+
+  return trimmedValue;
+}
+
+export class UpdateUserDto {
+  @ApiPropertyOptional({
     example: 'john_doe',
     minLength: 3,
     maxLength: 50,
   })
+  @Transform(emptyStringToUndefined)
+  @IsOptional()
   @IsString({
     message: i18nValidationMessage('validation.IS_STRING'),
   })
@@ -35,15 +54,14 @@ export class RegisterDto {
   @MaxLength(50, {
     message: i18nValidationMessage('validation.MAX_LENGTH'),
   })
-  username!: string;
+  username?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'john@example.com',
     maxLength: 320,
   })
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
-  })
+  @Transform(emptyStringToUndefined)
+  @IsOptional()
   @IsEmail(
     {},
     {
@@ -53,18 +71,17 @@ export class RegisterDto {
   @MaxLength(320, {
     message: i18nValidationMessage('validation.MAX_LENGTH'),
   })
-  email!: string;
+  email?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'securePassword123',
     minLength: PASSWORD_MIN_LENGTH,
     maxLength: PASSWORD_MAX_LENGTH,
   })
+  @Transform(emptyStringToUndefined)
+  @IsOptional()
   @IsString({
     message: i18nValidationMessage('validation.IS_STRING'),
-  })
-  @IsNotEmpty({
-    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
   })
   @MinLength(PASSWORD_MIN_LENGTH, {
     message: i18nValidationMessage('validation.MIN_LENGTH'),
@@ -72,5 +89,29 @@ export class RegisterDto {
   @MaxLength(PASSWORD_MAX_LENGTH, {
     message: i18nValidationMessage('validation.MAX_LENGTH'),
   })
-  password!: string;
+  password?: string;
+
+  @ApiPropertyOptional({
+    example: 'Backend developer learning NestJS',
+    maxLength: 500,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString({
+    message: i18nValidationMessage('validation.IS_STRING'),
+  })
+  @MaxLength(500, {
+    message: i18nValidationMessage('validation.MAX_LENGTH'),
+  })
+  bio?: string;
+
+  /*
+   * Swagger may submit avatar="" when no file
+   * is selected. The actual file is handled
+   * by @UploadedFile().
+   */
+  @Transform(emptyStringToUndefined)
+  @IsOptional()
+  @Allow()
+  avatar?: string;
 }
