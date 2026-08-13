@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "notFound": "Không tìm thấy bình luận",
+    "forbidden": "Bạn không có quyền xóa bình luận này"
+  }
+}

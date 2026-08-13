@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { RedisModule } from './redis/redis.module';
 import { UserModule } from './user/user.module';
+import { CommentModule } from './comment/comment.module';
 
 const GLOBAL_RATE_LIMIT_TTL_MS = 60_000;
 const GLOBAL_RATE_LIMIT = 10;
@@ -95,6 +96,7 @@ const GLOBAL_RATE_LIMIT = 10;
     UserModule,
     ProfileModule,
     ArticleModule,
+    CommentModule,
   ],
 
   controllers: [AppController],

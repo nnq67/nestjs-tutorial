@@ -89,7 +89,7 @@ export class AttachmentService {
     );
 
     const publicUrl =
-      `${AVATAR_PUBLIC_URL_PREFIX}` + `/${storedFileName}`;
+      `${AVATAR_PUBLIC_URL_PREFIX}/${storedFileName}`;
 
     await this.writeAvatarFile(
       uploadDirectory,
@@ -99,7 +99,9 @@ export class AttachmentService {
 
     try {
       if (existingAttachment) {
-        await attachmentRepository.softRemove(existingAttachment);
+        await attachmentRepository.softRemove(
+          existingAttachment,
+        );
       }
 
       const attachment = attachmentRepository.create({
@@ -112,12 +114,18 @@ export class AttachmentService {
         fileSize: file.size,
       });
 
-      return await attachmentRepository.save(attachment);
+      return await attachmentRepository.save(
+        attachment,
+      );
     } catch {
-      await this.removeFileBestEffort(absoluteFilePath);
+      await this.removeFileBestEffort(
+        absoluteFilePath,
+      );
 
       throw new InternalServerErrorException(
-        this.i18nService.t('user.errors.avatarStorageFailed'),
+        this.i18nService.t(
+          'user.errors.avatarStorageFailed',
+        ),
       );
     }
   }
@@ -138,12 +146,16 @@ export class AttachmentService {
       );
     } catch {
       throw new InternalServerErrorException(
-        this.i18nService.t('user.errors.avatarStorageFailed'),
+        this.i18nService.t(
+          'user.errors.avatarStorageFailed',
+        ),
       );
     }
   }
 
-  private getAvatarExtension(mimeType: string): string {
+  private getAvatarExtension(
+    mimeType: string,
+  ): string {
     const extension =
       AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
 
@@ -153,7 +165,8 @@ export class AttachmentService {
           'user.errors.avatarInvalidType',
           {
             args: {
-              supportedTypes: 'JPEG, PNG, WEBP',
+              supportedTypes:
+                'JPEG, PNG, WEBP',
             },
           },
         ),
