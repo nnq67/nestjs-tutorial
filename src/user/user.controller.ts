@@ -96,7 +96,6 @@ export class UserController {
   @ApiBody({
     schema: {
       type: 'object',
-
       properties: {
         username: {
           type: 'string',
@@ -105,7 +104,6 @@ export class UserController {
           maxLength: 50,
           description: 'Optional new username',
         },
-
         email: {
           type: 'string',
           format: 'email',
@@ -113,7 +111,6 @@ export class UserController {
           maxLength: 320,
           description: 'Optional new email',
         },
-
         password: {
           type: 'string',
           example: 'securePassword123',
@@ -121,7 +118,6 @@ export class UserController {
           maxLength: PASSWORD_MAX_LENGTH,
           description: 'Optional new password',
         },
-
         bio: {
           type: 'string',
           example: 'Backend developer learning NestJS',
@@ -130,7 +126,6 @@ export class UserController {
           description:
             'Optional biography. Submit an empty value to remove the current bio.',
         },
-
         avatar: {
           type: 'string',
           format: 'binary',

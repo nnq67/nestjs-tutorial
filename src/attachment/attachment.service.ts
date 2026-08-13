@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import { I18nService } from 'nestjs-i18n';
 import { Repository } from 'typeorm';
 
@@ -34,7 +34,6 @@ export class AttachmentService {
     return this.attachmentRepository.findOne({
       where: {
         attachableType: USER_ATTACHABLE_TYPE,
-
         attachableId: userId,
       },
     });
@@ -63,60 +62,72 @@ export class AttachmentService {
   async createOrReplaceAvatar(
     userId: number,
     file: UploadedAvatarFile,
+    attachmentRepository: Repository<Attachment> =
+      this.attachmentRepository,
   ): Promise<Attachment> {
     this.validateAvatar(file);
 
-    const existingAttachment = await this.findAvatarByUserId(userId);
+    const existingAttachment = await attachmentRepository.findOne({
+      where: {
+        attachableType: USER_ATTACHABLE_TYPE,
+        attachableId: userId,
+      },
+    });
 
     const extension = this.getAvatarExtension(file.mimetype);
 
     const storedFileName = `${randomUUID()}.${extension}`;
 
-    const uploadDirectory = join(process.cwd(), AVATAR_UPLOAD_DIRECTORY);
+    const uploadDirectory = join(
+      process.cwd(),
+      AVATAR_UPLOAD_DIRECTORY,
+    );
 
-    const absoluteFilePath = join(uploadDirectory, storedFileName);
+    const absoluteFilePath = join(
+      uploadDirectory,
+      storedFileName,
+    );
 
-    const publicUrl = `${AVATAR_PUBLIC_URL_PREFIX}` + `/${storedFileName}`;
+    const publicUrl =
+      `${AVATAR_PUBLIC_URL_PREFIX}/${storedFileName}`;
 
-    await this.writeAvatarFile(uploadDirectory, absoluteFilePath, file.buffer);
-
-    const attachment =
-      existingAttachment ??
-      this.attachmentRepository.create({
-        id: randomUUID(),
-
-        attachableType: USER_ATTACHABLE_TYPE,
-
-        attachableId: userId,
-      });
-
-    const previousUrl = existingAttachment?.url;
-
-    attachment.url = publicUrl;
-
-    attachment.fileName = file.originalname;
-
-    attachment.fileType = file.mimetype;
-
-    attachment.fileSize = file.size;
-
-    let savedAttachment: Attachment;
+    await this.writeAvatarFile(
+      uploadDirectory,
+      absoluteFilePath,
+      file.buffer,
+    );
 
     try {
-      savedAttachment = await this.attachmentRepository.save(attachment);
+      if (existingAttachment) {
+        await attachmentRepository.softRemove(
+          existingAttachment,
+        );
+      }
+
+      const attachment = attachmentRepository.create({
+        id: randomUUID(),
+        attachableType: USER_ATTACHABLE_TYPE,
+        attachableId: userId,
+        url: publicUrl,
+        fileName: file.originalname,
+        fileType: file.mimetype,
+        fileSize: file.size,
+      });
+
+      return await attachmentRepository.save(
+        attachment,
+      );
     } catch {
-      await this.removeFileBestEffort(absoluteFilePath);
+      await this.removeFileBestEffort(
+        absoluteFilePath,
+      );
 
       throw new InternalServerErrorException(
-        this.i18nService.t('user.errors.avatarStorageFailed'),
+        this.i18nService.t(
+          'user.errors.avatarStorageFailed',
+        ),
       );
     }
-
-    if (previousUrl && previousUrl !== publicUrl) {
-      await this.deleteStoredFile(previousUrl);
-    }
-
-    return savedAttachment;
   }
 
   private async writeAvatarFile(
@@ -153,19 +164,9 @@ export class AttachmentService {
     return extension;
   }
 
-  private async deleteStoredFile(publicUrl: string): Promise<void> {
-    const storedFileName = basename(publicUrl);
-
-    const absoluteFilePath = join(
-      process.cwd(),
-      AVATAR_UPLOAD_DIRECTORY,
-      storedFileName,
-    );
-
-    await this.removeFileBestEffort(absoluteFilePath);
-  }
-
-  private async removeFileBestEffort(absoluteFilePath: string): Promise<void> {
+  private async removeFileBestEffort(
+    absoluteFilePath: string,
+  ): Promise<void> {
     await Promise.allSettled([
       rm(absoluteFilePath, {
         force: true,

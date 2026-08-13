@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   PrimaryColumn,
@@ -8,9 +9,14 @@ import {
 } from 'typeorm';
 
 @Entity('attachments')
-@Index('UQ_attachments_attachable', ['attachableType', 'attachableId'], {
-  unique: true,
-})
+@Index(
+  'UQ_attachments_active_attachable',
+  ['attachableType', 'attachableId'],
+  {
+    unique: true,
+    where: '"deleted_at" IS NULL',
+  },
+)
 export class Attachment {
   @PrimaryColumn({
     type: 'uuid',
@@ -63,4 +69,11 @@ export class Attachment {
     type: 'timestamp',
   })
   updatedAt!: Date;
+
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamp',
+    nullable: true,
+  })
+  deletedAt!: Date | null;
 }
