@@ -8,6 +8,7 @@ import * as path from 'node:path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { RedisModule } from './redis/redis.module';
@@ -72,15 +73,6 @@ const GLOBAL_RATE_LIMIT = 10;
         };
       },
 
-      /*
-       * Phải đặt ngoài useFactory.
-       *
-       * QueryResolver xử lý:
-       *   ?lang=vi
-       *
-       * HeaderResolver xử lý:
-       *   x-custom-lang: vi
-       */
       resolvers: [
         {
           use: QueryResolver,
@@ -102,6 +94,7 @@ const GLOBAL_RATE_LIMIT = 10;
     AuthModule,
     UserModule,
     ProfileModule,
+    ArticleModule,
   ],
 
   controllers: [AppController],

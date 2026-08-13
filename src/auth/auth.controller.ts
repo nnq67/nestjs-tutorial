@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Post,
-  Req,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Header, Post, Req, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -19,7 +12,6 @@ import {
   LOGIN_RATE_LIMIT,
   LOGIN_RATE_LIMIT_TTL_MS,
 } from '../common/constants/auth.constant';
-import { AntiCacheInterceptor } from '../common/interceptors/anti-cache.interceptor';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -34,11 +26,16 @@ interface AuthenticatedRequest extends Request {
 
 @ApiTags('Authentication')
 @Controller('auth')
-@UseInterceptors(AntiCacheInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiOperation({
     summary: 'Register a new user',
   })
@@ -51,11 +48,20 @@ export class AuthController {
     status: 409,
     description: 'Email or username already exists',
   })
-  register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
+  register(
+    @Body()
+    dto: RegisterDto,
+  ): Promise<AuthResponseDto> {
     return this.authService.register(dto);
   }
 
   @Post('login')
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @Throttle({
     default: {
       limit: LOGIN_RATE_LIMIT,
@@ -74,12 +80,21 @@ export class AuthController {
     status: 401,
     description: 'Invalid email or password',
   })
-  login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
+  login(
+    @Body()
+    dto: LoginDto,
+  ): Promise<AuthResponseDto> {
     return this.authService.login(dto);
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Logout and invalidate current token',
@@ -93,7 +108,10 @@ export class AuthController {
     status: 401,
     description: 'Invalid or missing access token',
   })
-  signOut(@Req() request: AuthenticatedRequest): Promise<LogoutResponseDto> {
+  signOut(
+    @Req()
+    request: AuthenticatedRequest,
+  ): Promise<LogoutResponseDto> {
     return this.authService.invalidateSession(request.user.accessToken);
   }
 }

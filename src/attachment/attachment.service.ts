@@ -62,7 +62,8 @@ export class AttachmentService {
   async createOrReplaceAvatar(
     userId: number,
     file: UploadedAvatarFile,
-    attachmentRepository: Repository<Attachment> = this.attachmentRepository,
+    attachmentRepository: Repository<Attachment> =
+      this.attachmentRepository,
   ): Promise<Attachment> {
     this.validateAvatar(file);
 
@@ -77,13 +78,24 @@ export class AttachmentService {
 
     const storedFileName = `${randomUUID()}.${extension}`;
 
-    const uploadDirectory = join(process.cwd(), AVATAR_UPLOAD_DIRECTORY);
+    const uploadDirectory = join(
+      process.cwd(),
+      AVATAR_UPLOAD_DIRECTORY,
+    );
 
-    const absoluteFilePath = join(uploadDirectory, storedFileName);
+    const absoluteFilePath = join(
+      uploadDirectory,
+      storedFileName,
+    );
 
-    const publicUrl = `${AVATAR_PUBLIC_URL_PREFIX}` + `/${storedFileName}`;
+    const publicUrl =
+      `${AVATAR_PUBLIC_URL_PREFIX}` + `/${storedFileName}`;
 
-    await this.writeAvatarFile(uploadDirectory, absoluteFilePath, file.buffer);
+    await this.writeAvatarFile(
+      uploadDirectory,
+      absoluteFilePath,
+      file.buffer,
+    );
 
     try {
       if (existingAttachment) {
@@ -120,7 +132,10 @@ export class AttachmentService {
         recursive: true,
       });
 
-      await writeFile(absoluteFilePath, buffer);
+      await writeFile(
+        absoluteFilePath,
+        buffer,
+      );
     } catch {
       throw new InternalServerErrorException(
         this.i18nService.t('user.errors.avatarStorageFailed'),
@@ -129,22 +144,28 @@ export class AttachmentService {
   }
 
   private getAvatarExtension(mimeType: string): string {
-    const extension = AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
+    const extension =
+      AVATAR_MIME_TYPE_EXTENSIONS[mimeType];
 
     if (!extension) {
       throw new BadRequestException(
-        this.i18nService.t('user.errors.avatarInvalidType', {
-          args: {
-            supportedTypes: 'JPEG, PNG, WEBP',
+        this.i18nService.t(
+          'user.errors.avatarInvalidType',
+          {
+            args: {
+              supportedTypes: 'JPEG, PNG, WEBP',
+            },
           },
-        }),
+        ),
       );
     }
 
     return extension;
   }
 
-  private async removeFileBestEffort(absoluteFilePath: string): Promise<void> {
+  private async removeFileBestEffort(
+    absoluteFilePath: string,
+  ): Promise<void> {
     await Promise.allSettled([
       rm(absoluteFilePath, {
         force: true,

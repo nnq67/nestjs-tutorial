@@ -90,7 +90,12 @@ export class UserService {
 
     const updatedUser = await this.userUpdateRepository.transaction(
       async (repositories) =>
-        this.updateUserWithinTransaction(userId, dto, avatar, repositories),
+        this.updateUserWithinTransaction(
+          userId,
+          dto,
+          avatar,
+          repositories,
+        ),
     );
 
     return this.buildCurrentUserResponse(updatedUser);
@@ -102,9 +107,16 @@ export class UserService {
     avatar: UploadedAvatarFile | undefined,
     repositories: UserUpdateRepositories,
   ): Promise<User> {
-    const user = await this.getUserOrFail(userId, repositories.userRepository);
+    const user = await this.getUserOrFail(
+      userId,
+      repositories.userRepository,
+    );
 
-    await this.applyUserUpdates(user, dto, repositories.userRepository);
+    await this.applyUserUpdates(
+      user,
+      dto,
+      repositories.userRepository,
+    );
 
     const updatedUser = await repositories.userRepository.save(user);
 
@@ -133,7 +145,11 @@ export class UserService {
         );
       }
 
-      await this.ensureUsernameAvailable(username, user.id, userRepository);
+      await this.ensureUsernameAvailable(
+        username,
+        user.id,
+        userRepository,
+      );
 
       user.username = username;
     }
@@ -141,7 +157,11 @@ export class UserService {
     if (dto.email !== undefined) {
       const email = dto.email.trim().toLowerCase();
 
-      await this.ensureEmailAvailable(email, user.id, userRepository);
+      await this.ensureEmailAvailable(
+        email,
+        user.id,
+        userRepository,
+      );
 
       user.email = email;
     }
@@ -153,7 +173,10 @@ export class UserService {
     }
 
     if (dto.password !== undefined) {
-      user.password = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
+      user.password = await bcrypt.hash(
+        dto.password,
+        BCRYPT_SALT_ROUNDS,
+      );
     }
   }
 
@@ -217,7 +240,9 @@ export class UserService {
   private async buildCurrentUserResponse(
     user: User,
   ): Promise<CurrentUserResponseDto> {
-    const avatar = await this.attachmentService.findAvatarByUserId(user.id);
+    const avatar = await this.attachmentService.findAvatarByUserId(
+      user.id,
+    );
 
     return plainToInstance(
       CurrentUserResponseDto,

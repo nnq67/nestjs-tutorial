@@ -1,8 +1,13 @@
 {
-  "IS_STRING": "{property} phải là chuỗi",
-  "IS_NOT_EMPTY": "{property} không được để trống",
-  "IS_EMAIL": "{property} phải là địa chỉ email hợp lệ",
-  "MIN_LENGTH": "{property} phải có ít nhất {constraints.0} ký tự",
-  "MAX_LENGTH": "{property} chỉ được có tối đa {constraints.0} ký tự",
-  "NOT_BLANK": "{property} không được chỉ chứa khoảng trắng"
+  "IS_STRING": "$property phải là chuỗi.",
+  "IS_NOT_EMPTY": "$property không được để trống.",
+  "NOT_BLANK": "$property không được chỉ chứa khoảng trắng.",
+  "IS_EMAIL": "$property phải là địa chỉ email hợp lệ.",
+  "MIN_LENGTH": "$property phải có ít nhất $constraint1 ký tự.",
+  "MAX_LENGTH": "$property không được vượt quá $constraint1 ký tự.",
+  "IS_ARRAY": "$property phải là một mảng.",
+  "ARRAY_MAX_SIZE": "$property không được chứa quá $constraint1 phần tử.",
+  "IS_INT": "$property phải là số nguyên.",
+  "MIN": "$property không được nhỏ hơn $constraint1.",
+  "MAX": "$property không được lớn hơn $constraint1."
 }

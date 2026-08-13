@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "notFound": "Không tìm thấy bài viết.",
+    "forbidden": "Bạn không có quyền chỉnh sửa bài viết này."
+  }
+}

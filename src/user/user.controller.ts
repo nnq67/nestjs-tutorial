@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Put,
   Req,
   UploadedFile,
@@ -28,7 +29,6 @@ import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
 } from '../common/constants/auth.constant';
-import { AntiCacheInterceptor } from '../common/interceptors/anti-cache.interceptor';
 import { CurrentUserResponseDto } from './dto/responses/current-user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
@@ -41,11 +41,16 @@ interface AuthenticatedRequest extends Request {
 @ApiBearerAuth()
 @Controller('user')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(AntiCacheInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @ApiOperation({
     summary: 'Get current user',
   })
@@ -70,6 +75,12 @@ export class UserController {
   }
 
   @Put()
+  @Header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate',
+  )
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   @UseInterceptors(
     FileInterceptor('avatar', {
       limits: {
